@@ -1,6 +1,7 @@
 package com.example.game_news.controllers;
 
 
+import com.example.game_news.models.CustomResponse;
 import com.example.game_news.models.gameNews;
 import com.example.game_news.repositories.gameNewsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +20,16 @@ public class gameNewsController {
     private gameNewsRepository repo;
 
     @PostMapping("addNews")
-    public ResponseEntity<String> addNews(@RequestBody gameNews news) {
+    public ResponseEntity<CustomResponse> addNews(@RequestBody gameNews news) {
         repo.save(news);
 
-        return new ResponseEntity<String>("Game news is inserted", HttpStatus.OK);
+        CustomResponse response = new CustomResponse();
+        response.setStatus(HttpStatus.OK);
+        response.setStatusCode(HttpStatus.OK.value());
+        response.setDescription("Game news is inserted");
+        return new ResponseEntity<CustomResponse>(response, HttpStatus.OK);
     }
+
 
     @GetMapping("getAllNews")
     public List<gameNews> getAllNews () {
@@ -31,29 +37,48 @@ public class gameNewsController {
     }
 
     @DeleteMapping("deleteNews/{id}")
-    public ResponseEntity<String> deleteNews(@PathVariable String id) {
+    public ResponseEntity<CustomResponse> deleteNews(@PathVariable String id) {
         Optional<gameNews> existingNews = repo.findById(id);
 
-        if(existingNews.isPresent()){
+        if (existingNews.isPresent()) {
             repo.deleteById(id);
-            return new ResponseEntity<String>("Game news is deleted", HttpStatus.OK);
+
+            CustomResponse response = new CustomResponse();
+            response.setStatus(HttpStatus.OK);
+            response.setStatusCode(HttpStatus.OK.value());
+            response.setDescription("Game news is deleted");
+            return new ResponseEntity<CustomResponse>(response, HttpStatus.OK);
         } else {
-            return new ResponseEntity<String>("Game news not found", HttpStatus.NOT_FOUND);
+            CustomResponse response = new CustomResponse();
+            response.setStatus(HttpStatus.NOT_FOUND);
+            response.setStatusCode(HttpStatus.NOT_FOUND.value());
+            response.setDescription("Game news not found");
+            return new ResponseEntity<CustomResponse>(response, HttpStatus.NOT_FOUND);
         }
     }
 
+
     @PutMapping("updateNews/{id}")
-    public ResponseEntity<String> updateNews(@PathVariable String id, @RequestBody gameNews newNews) {
+    public ResponseEntity<CustomResponse> updateNews(@PathVariable String id, @RequestBody gameNews game) {
         Optional<gameNews> existingNewsOpt = repo.findById(id);
 
         if(existingNewsOpt.isPresent()){
-            gameNews existingNews = existingNewsOpt.get();
-            existingNews.setTitle(newNews.getTitle());
-            existingNews.setDescription(newNews.getDescription());
-            repo.save(existingNews);
-            return new ResponseEntity<String>("Game news updated!", HttpStatus.OK);
+            gameNews existingGames = existingNewsOpt.get();
+            existingGames.setTitle(game.getTitle());
+            existingGames.setDescription(game.getDescription());
+            repo.save(existingGames);
+
+            CustomResponse response = new CustomResponse();
+            response.setStatus(HttpStatus.OK);
+            response.setStatusCode(HttpStatus.OK.value());
+            response.setDescription("Game updated!");
+            return new ResponseEntity<CustomResponse>(response, HttpStatus.OK);
         } else {
-            return new ResponseEntity<String>("Game news not found", HttpStatus.NOT_FOUND);
+            CustomResponse response = new CustomResponse();
+            response.setStatus(HttpStatus.NOT_FOUND);
+            response.setStatusCode(HttpStatus.NOT_FOUND.value());
+            response.setDescription("Game not found");
+            return new ResponseEntity<CustomResponse>(response, HttpStatus.NOT_FOUND);
         }
     }
 }
